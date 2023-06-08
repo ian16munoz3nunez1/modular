@@ -131,11 +131,11 @@ class YouBot:
 
         return self.t04
 
-    def jacob(self, q):
+    def jacob(self, q=None):
         alpha = self.alpha
         a = self.a
         d = self.d
-        theta = self.theta if q is None else q
+        q = self.theta if q is None else q
 
         # Fila 1
         j11 = -np.sin(q[0]) * ( a[3]*np.cos(q[1]+q[2]+q[3]) + a[2]*np.cos(q[1]+q[2]) + a[1]*np.cos(q[1]) )
@@ -180,6 +180,25 @@ class YouBot:
 
         return J
 
+    def workspace(self):
+        workSpace = np.array([[], [], []])
+        i = 0
+        while i <= 2*pi:
+            j = 0
+            while j <= 2*pi:
+                q = np.array([i, j, 0.0, 0.0]).reshape(-1, 1)
+                self.fkine(q.ravel())
+                x_i = self.getPosition()
+                workSpace = np.hstack((workSpace, x_i))
+                j += 0.1
+            i += 0.1
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+
+        ax.scatter(workSpace[0, :], workSpace[1, :], workSpace[2, :], c='r', marker='o')
+        plt.show()
+
     def getPosition(self):
         return self.t04[0:3, 3].reshape(-1, 1)
 
@@ -193,10 +212,11 @@ class YouBot:
 
         fig = plt.figure(1)
         ax = fig.add_subplot(111, projection='3d')
-        
-        ax.set_xlim(-2, 2)
-        ax.set_ylim(-2, 2)
-        ax.set_zlim(0, 2)
+
+        ax.axis('equal')
+        ax.set_xlim(-0.6, 0.6)
+        ax.set_ylim(-0.6, 0.6)
+        ax.set_zlim(0, 0.6)
         ax.set_title("YouBot", fontsize=20)
         ax.set_xlabel('x', fontsize=15)
         ax.set_ylabel('y', fontsize=15)
