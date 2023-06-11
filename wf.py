@@ -1,4 +1,4 @@
-# Ian Mu;oz Nu;ez
+# Beto <--> Edna <--> Ian
 
 import cv2 as cv
 import numpy as np

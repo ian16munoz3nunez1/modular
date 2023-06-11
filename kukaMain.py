@@ -1,4 +1,4 @@
-# Ian Mu;oz Nu;ez
+# Beto <--> Edna <--> Ian
 
 import timeit
 import cv2 as cv
@@ -7,71 +7,76 @@ import matplotlib.pyplot as plt
 from time import sleep
 from colorama import init
 from colorama.ansi import Fore
-from kuka import Kuka
+from kuka import Kuka, link
 from wf import WaveFront
+pi = np.pi
 
 init(autoreset=True)
 
-kuka = Kuka(19999)
+l1 = link(pi/2, 0.0, 0.147, 0.0)
+l2 = link(0.0, 0.155, 0.0, pi/2)
+l3 = link(0.0, 0.135, 0.0, -pi/2)
+l4 = link(0.0, 0.217, 0.0, -pi/2)
+
+kuka = Kuka(19999, np.vstack((l1, l2, l3, l4)))
 L = 0.471/2
 l = 0.3/2
 S = 16
 
-# imagen = kuka.getImage()
-# imagen = cv.resize(imagen, (100, 100))
-# wf = WaveFront(imagen)
-# 
-# mask = wf.mainMask((45, 150, 150), (60, 255, 255))[0]
-# 
-# startNorm = wf.appMask((30, 150, 150), (40, 255, 255), 1)[1]
-# startY, startX = wf.centroide(startNorm)
-# start = np.array([[startY], [startX]])
-# 
-# goalNorm = wf.appMask((125, 150, 150), (160, 255, 255), 1)[1]
-# goalY, goalX = wf.centroide(goalNorm)
-# goal = np.array([[goalY], [goalX]])
-# 
-# path = wf.calcPath(mask, start, goal)
-# xyPath = wf.cr2xy(path, 3.2, 2.5)
-# wf.plotPath(path, start, goal)
-# N = xyPath.shape[1]
+imagen = kuka.getImage()
+imagen = cv.resize(imagen, (100, 100))
+wf = WaveFront(imagen)
+
+mask = wf.mainMask((45, 150, 150), (60, 255, 255))[0]
+
+startNorm = wf.appMask((30, 150, 150), (40, 255, 255), 1)[1]
+startY, startX = wf.centroide(startNorm)
+start = np.array([[startY], [startX]])
+
+goalNorm = wf.appMask((125, 150, 150), (160, 255, 255), 1)[1]
+goalY, goalX = wf.centroide(goalNorm)
+goal = np.array([[goalY], [goalX]])
+
+path = wf.calcPath(mask, start, goal)
+xyPath = wf.cr2xy(path, 3.2, 2.5)
+wf.plotPath(path, start, goal)
+N = xyPath.shape[1]
 
 xi_plot = np.array([[], [], []])
+pi_plot = np.array([[], [], []])
 xd_plot = np.array([[], [], []])
 e_plot = np.array([[], [], []])
 v_plot = np.array([[], [], [], []])
 t_plot = np.array([])
 
-x_d = np.array([1.0, 1.0, np.pi/2]).reshape(-1, 1)
-k = np.diag([1.8, 1.8, 1.8])
+k = np.diag([0.8, 0.8, 0.8])
 T = 0.4
 
 start = timeit.default_timer()
 end = start
 
 i = 0
-while end-start <= S:
-    # t = end - start
-    # x_d = np.array([xyPath[0, i], xyPath[1, i], 0.0]).reshape(-1, 1)
-    # i = int(np.floor(t/T))
+while i < N:
+    t = end - start
+    x_d = np.array([xyPath[0, i], xyPath[1, i], 0.0]).reshape(-1, 1)
+    i = int(np.floor(t/T))
 
-    x_i = kuka.getPose().ravel()
-    alpha = x_i[2] + (np.pi/4)
+    x_i = kuka.getPose().ravel()[:3]
+
+    alpha = x_i[2] + (pi/4)
     sq2 = np.sqrt(2)
-
     m = np.array([[sq2*np.sin(alpha), -sq2*np.cos(alpha), -(L+l)],
                   [sq2*np.cos(alpha), sq2*np.sin(alpha), (L+l)],
                   [sq2*np.cos(alpha), sq2*np.sin(alpha), -(L+l)],
                   [sq2*np.sin(alpha), -sq2*np.cos(alpha), (L+l)]])
-    x_i = x_i.reshape(-1, 1)
-    e = x_d - x_i
-    if np.mean(e) < 0.001:
+    e = x_d - x_i.reshape(-1, 1)
+    if np.mean(abs(e)) < 0.001:
         break
     x_dot = np.matmul(m, np.matmul(k, e))
 
     kuka.setJointVelocity(x_dot)
 
-    xi_plot = np.hstack((xi_plot, x_i))
+    xi_plot = np.hstack((xi_plot, x_i.reshape(-1, 1)))
     xd_plot = np.hstack((xd_plot, x_d))
     v_plot = np.hstack((v_plot, x_dot))
     e_plot = np.hstack((e_plot, e))
