@@ -17,8 +17,8 @@ def dibujar_kuka(p, q, p_plot=None, x_plot=None):
     ax.set_ylabel('y', fontsize=15)
     ax.set_zlabel('z', fontsize=15)
     ax.axis('equal')
-    ax.set_xlim(-1, 1)
-    ax.set_ylim(-1, 1)
+    ax.set_xlim(-3.5, 3.5)
+    ax.set_ylim(-3.5, 3.5)
     ax.set_zlim(0, 1)
 
     #### Matriz del eje global al de la plataforma

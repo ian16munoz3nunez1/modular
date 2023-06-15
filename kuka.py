@@ -31,7 +31,12 @@ class Kuka:
         self.__q2 = []
         self.__q3 = []
         self.__q4 = []
-        self.__camera = []
+        self.__gripper1 = []
+        self.__gripper2 = []
+        self.__cam1 = []
+        self.__cam2 = []
+        self.__cam3 = []
+        self.__cam4 = []
 
         self.__wl = -2.5*np.ones((4, 1))
         self.__wu = 2.5*np.ones((4, 1))
@@ -49,7 +54,12 @@ class Kuka:
             _, self.__q2 = sim.simxGetObjectHandle(self.__clientID, '/youBot/youBotArmJoint1', sim.simx_opmode_oneshot_wait)
             _, self.__q3 = sim.simxGetObjectHandle(self.__clientID, '/youBot/youBotArmJoint2', sim.simx_opmode_oneshot_wait)
             _, self.__q4 = sim.simxGetObjectHandle(self.__clientID, '/youBot/youBotArmJoint3', sim.simx_opmode_oneshot_wait)
-            _, self.__camera = sim.simxGetObjectHandle(self.__clientID, '/kinect/rgb', sim.simx_opmode_oneshot_wait)
+            _, self.__gripper1 = sim.simxGetObjectHandle(self.__clientID, '/youBot/youBotGripperJoint1', sim.simx_opmode_oneshot_wait)
+            _, self.__gripper2 = sim.simxGetObjectHandle(self.__clientID, '/youBot/youBotGripperJoint2', sim.simx_opmode_oneshot_wait)
+            _, self.__cam1 = sim.simxGetObjectHandle(self.__clientID, '/cam1/rgb', sim.simx_opmode_oneshot_wait)
+            _, self.__cam2 = sim.simxGetObjectHandle(self.__clientID, '/cam2/rgb', sim.simx_opmode_oneshot_wait)
+            _, self.__cam3 = sim.simxGetObjectHandle(self.__clientID, '/cam3/rgb', sim.simx_opmode_oneshot_wait)
+            _, self.__cam4 = sim.simxGetObjectHandle(self.__clientID, '/cam4/rgb', sim.simx_opmode_oneshot_wait)
 
             sim.simxGetStringSignal(self.__clientID, 'measuredDataAtThisTime', sim.simx_opmode_streaming)
             sleep(1)
@@ -102,18 +112,52 @@ class Kuka:
             print(Fore.RED + "[-] Conexion perdida (setJointVelocity)")
             raise RuntimeError("error")
 
+    def closeGrip(self):
+        if sim.simxGetConnectionId(self.__clientID) == 1:
+            sim.simxSetJointTargetVelocity(self.__clientID, self.__gripper1, -0.01, sim.simx_opmode_streaming)
+            sim.simxSetJointTargetVelocity(self.__clientID, self.__gripper2, 0.02, sim.simx_opmode_streaming)
+
+        else:
+            print(Fore.RED + "[-] Conexion perdida (openGrip)")
+            raise RuntimeError("error")
+
+    def openGrip(self):
+        if sim.simxGetConnectionId(self.__clientID) == 1:
+            sim.simxSetJointTargetVelocity(self.__clientID, self.__gripper1, 0.01, sim.simx_opmode_streaming)
+            sim.simxSetJointTargetVelocity(self.__clientID, self.__gripper2, -0.02, sim.simx_opmode_streaming)
+
+        else:
+            print(Fore.RED + "[-] Conexion perdida (closeGrip)")
+            raise RuntimeError("error")
+
     def getImage(self):
         if sim.simxGetConnectionId(self.__clientID) == 1:
-            ret, resolution, img = sim.simxGetVisionSensorImage(self.__clientID, self.__camera, 0, sim.simx_opmode_oneshot_wait)
-            img = np.array(img, dtype=np.uint8)
-            img.resize([resolution[1], resolution[0], 3])
+            _, resolution1, img1 = sim.simxGetVisionSensorImage(self.__clientID, self.__cam1, 0, sim.simx_opmode_oneshot_wait)
+            _, resolution2, img2 = sim.simxGetVisionSensorImage(self.__clientID, self.__cam2, 0, sim.simx_opmode_oneshot_wait)
+            _, resolution3, img3 = sim.simxGetVisionSensorImage(self.__clientID, self.__cam3, 0, sim.simx_opmode_oneshot_wait)
+            _, resolution4, img4 = sim.simxGetVisionSensorImage(self.__clientID, self.__cam4, 0, sim.simx_opmode_oneshot_wait)
 
         else:
             print(Fore.RED + "[-] Conexion perdida (getImage)")
             raise RuntimeError("error")
 
-        img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
-        img = cv.flip(img, 0)
+        img1 = np.array(img1, dtype=np.uint8)
+        img2 = np.array(img2, dtype=np.uint8)
+        img3 = np.array(img3, dtype=np.uint8)
+        img4 = np.array(img4, dtype=np.uint8)
+        img1.resize([resolution1[1], resolution1[0], 3])
+        img2.resize([resolution2[1], resolution2[0], 3])
+        img3.resize([resolution3[1], resolution3[0], 3])
+        img4.resize([resolution4[1], resolution4[0], 3])
+        img1 = cv.cvtColor(img1, cv.COLOR_RGB2BGR)
+        img2 = cv.cvtColor(img2, cv.COLOR_RGB2BGR)
+        img3 = cv.cvtColor(img3, cv.COLOR_RGB2BGR)
+        img4 = cv.cvtColor(img4, cv.COLOR_RGB2BGR)
+        img1 = cv.flip(img1, 0)
+        img2 = cv.flip(img2, 0)
+        img3 = cv.flip(img3, 0)
+        img4 = cv.flip(img4, 0)
+        img = np.vstack((np.hstack((img1, img2)), np.hstack((img3, img4))))
         return img
 
     def stopSimulation(self):

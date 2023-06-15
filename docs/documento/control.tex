@@ -1,0 +1,213 @@
+\sffamily\large\justify
+
+\section{Control}
+
+\subsection{Cinemática diferencial}
+
+\begin{equation*}
+    \dot{x} = J(q) \dot{q}
+\end{equation*}
+
+\subsection{Cinemática diferencial inversa}
+
+\begin{equation*}
+    \dot{q} = J(q)^{-1}\dot{x}
+\end{equation*}
+
+\begin{equation*}
+    \dot{x} = e
+\end{equation*}
+
+\begin{equation*}
+    e = (x_d - x_i)
+\end{equation*}
+
+\begin{equation*}
+    \dot{q} = J(q)^{-1}\dot{x} \quad\to\quad \dot{q} = J(q)^{-1}e \quad\to\quad \dot{q} = J(q)^{-1}(x_d-x_i)
+\end{equation*}
+
+\begin{equation*}
+    \dot{q} = J(q)^{-1} (ke)
+\end{equation*}
+
+\hspace{0.5cm} Siendo $k$ una matriz definida positiva.
+
+\subsection{Modelo de control del \emph{Kuka YouBot Arm}}
+
+\begin{equation*}
+    q =
+    \begin{bmatrix}
+        x_p \\
+        y_p \\
+        \theta_p \\
+        \theta_1 \\
+        \theta_2 \\
+        \theta_3 \\
+        \theta_4
+    \end{bmatrix}
+    \quad
+    \dot{q} =
+    \begin{bmatrix}
+        \dot{x_p} \\
+        \dot{y_p} \\
+        \dot{\theta_p} \\
+        \dot{\theta_1} \\
+        \dot{\theta_2} \\
+        \dot{\theta_3} \\
+        \dot{\theta_4}
+    \end{bmatrix}
+    \quad
+    \dot{x} =
+    \begin{bmatrix}
+        \dot{x} \\
+        \dot{y} \\
+        \dot{z}
+    \end{bmatrix}
+\end{equation*}
+
+\newpage
+\subsection{Matriz Jacobiana del \emph{Kuka} (Cinemática directa)}
+
+\begin{equation*}
+    \begin{bmatrix}
+        \dot{x} \\
+        \dot{y} \\
+        \dot{z}
+    \end{bmatrix} =
+    \begin{bmatrix}
+        \dfrac{\partial t_x}{\partial x_p} & \dfrac{\partial t_x}{\partial y_p} & \dfrac{\partial t_x}{\partial \theta_p} & \dfrac{\partial t_x}{\partial \theta_1} & \dfrac{\partial t_x}{\partial \theta_2} & \dfrac{\partial t_x}{\partial \theta_3} & \dfrac{\partial t_x}{\partial \theta_4} \\
+        \dfrac{\partial t_y}{\partial x_p} & \dfrac{\partial t_y}{\partial y_p} & \dfrac{\partial t_y}{\partial \theta_p} & \dfrac{\partial t_y}{\partial \theta_1} & \dfrac{\partial t_y}{\partial \theta_2} & \dfrac{\partial t_y}{\partial \theta_3} & \dfrac{\partial t_y}{\partial \theta_4} \\
+        \dfrac{\partial t_z}{\partial x_p} & \dfrac{\partial t_z}{\partial y_p} & \dfrac{\partial t_z}{\partial \theta_p} & \dfrac{\partial t_z}{\partial \theta_1} & \dfrac{\partial t_z}{\partial \theta_2} & \dfrac{\partial t_z}{\partial \theta_3} & \dfrac{\partial t_z}{\partial \theta_4} \\
+    \end{bmatrix}
+    \begin{bmatrix}
+        \dot{x}_p \\
+        \dot{y}_p \\
+        \dot{\theta}_p \\
+        \dot{\theta}_1 \\
+        \dot{\theta}_2 \\
+        \dot{\theta}_3 \\
+        \dot{\theta}_4
+    \end{bmatrix}
+\end{equation*}
+
+\subsection{Matriz Jacobiana del \emph{Kuka} (Cinemática inversa)}
+
+\begin{equation*}
+    \begin{bmatrix}
+        \dot{x}_p \\
+        \dot{y}_p \\
+        \dot{\theta}_p \\
+        \dot{\theta}_1 \\
+        \dot{\theta}_2 \\
+        \dot{\theta}_3 \\
+        \dot{\theta}_4
+    \end{bmatrix} =
+    \begin{bmatrix}
+        \dfrac{\partial t_x}{\partial x_p} & \dfrac{\partial t_x}{\partial y_p} & \dfrac{\partial t_x}{\partial \theta_p} & \dfrac{\partial t_x}{\partial \theta_1} & \dfrac{\partial t_x}{\partial \theta_2} & \dfrac{\partial t_x}{\partial \theta_3} & \dfrac{\partial t_x}{\partial \theta_4} \\
+        \dfrac{\partial t_y}{\partial x_p} & \dfrac{\partial t_y}{\partial y_p} & \dfrac{\partial t_y}{\partial \theta_p} & \dfrac{\partial t_y}{\partial \theta_1} & \dfrac{\partial t_y}{\partial \theta_2} & \dfrac{\partial t_y}{\partial \theta_3} & \dfrac{\partial t_y}{\partial \theta_4} \\
+        \dfrac{\partial t_z}{\partial x_p} & \dfrac{\partial t_z}{\partial y_p} & \dfrac{\partial t_z}{\partial \theta_p} & \dfrac{\partial t_z}{\partial \theta_1} & \dfrac{\partial t_z}{\partial \theta_2} & \dfrac{\partial t_z}{\partial \theta_3} & \dfrac{\partial t_z}{\partial \theta_4} \\
+    \end{bmatrix}^\dagger
+    \begin{bmatrix}
+        \dot{x} \\
+        \dot{y} \\
+        \dot{z}
+    \end{bmatrix}
+\end{equation*}
+
+\begin{equation*}
+    \begin{bmatrix}
+        \dot{x}_p \\
+        \dot{y}_p \\
+        \dot{\theta}_p \\
+        \dot{\theta}_1 \\
+        \dot{\theta}_2 \\
+        \dot{\theta}_3 \\
+        \dot{\theta}_4
+    \end{bmatrix} =
+    \begin{bmatrix}
+        \dfrac{\partial t_x}{\partial x_p} & \dfrac{\partial t_x}{\partial y_p} & \dfrac{\partial t_x}{\partial \theta_p} & \dfrac{\partial t_x}{\partial \theta_1} & \dfrac{\partial t_x}{\partial \theta_2} & \dfrac{\partial t_x}{\partial \theta_3} & \dfrac{\partial t_x}{\partial \theta_4} \\
+        \dfrac{\partial t_y}{\partial x_p} & \dfrac{\partial t_y}{\partial y_p} & \dfrac{\partial t_y}{\partial \theta_p} & \dfrac{\partial t_y}{\partial \theta_1} & \dfrac{\partial t_y}{\partial \theta_2} & \dfrac{\partial t_y}{\partial \theta_3} & \dfrac{\partial t_y}{\partial \theta_4} \\
+        \dfrac{\partial t_z}{\partial x_p} & \dfrac{\partial t_z}{\partial y_p} & \dfrac{\partial t_z}{\partial \theta_p} & \dfrac{\partial t_z}{\partial \theta_1} & \dfrac{\partial t_z}{\partial \theta_2} & \dfrac{\partial t_z}{\partial \theta_3} & \dfrac{\partial t_z}{\partial \theta_4} \\
+    \end{bmatrix}^\dagger
+    \begin{bmatrix}
+        x_d - x \\
+        y_d - y \\
+        z_d - z
+    \end{bmatrix}
+\end{equation*}
+
+\begin{equation*}
+    \begin{bmatrix}
+        \dot{x}_p \\
+        \dot{y}_p \\
+        \dot{\theta}_p \\
+        \dot{\theta}_1 \\
+        \dot{\theta}_2 \\
+        \dot{\theta}_3 \\
+        \dot{\theta}_4
+    \end{bmatrix} =
+    \begin{bmatrix}
+        \dfrac{\partial t_x}{\partial x_p} & \dfrac{\partial t_x}{\partial y_p} & \dfrac{\partial t_x}{\partial \theta_p} & \dfrac{\partial t_x}{\partial \theta_1} & \dfrac{\partial t_x}{\partial \theta_2} & \dfrac{\partial t_x}{\partial \theta_3} & \dfrac{\partial t_x}{\partial \theta_4} \\
+        \dfrac{\partial t_y}{\partial x_p} & \dfrac{\partial t_y}{\partial y_p} & \dfrac{\partial t_y}{\partial \theta_p} & \dfrac{\partial t_y}{\partial \theta_1} & \dfrac{\partial t_y}{\partial \theta_2} & \dfrac{\partial t_y}{\partial \theta_3} & \dfrac{\partial t_y}{\partial \theta_4} \\
+        \dfrac{\partial t_z}{\partial x_p} & \dfrac{\partial t_z}{\partial y_p} & \dfrac{\partial t_z}{\partial \theta_p} & \dfrac{\partial t_z}{\partial \theta_1} & \dfrac{\partial t_z}{\partial \theta_2} & \dfrac{\partial t_z}{\partial \theta_3} & \dfrac{\partial t_z}{\partial \theta_4} \\
+    \end{bmatrix}^\dagger
+    \begin{bmatrix}
+        k_1 & 0 & 0 \\
+        0 & k_2 & 0 \\
+        0 & 0 & k_3
+    \end{bmatrix}
+    \begin{bmatrix}
+        x_d - x \\
+        y_d - y \\
+        z_d - z
+    \end{bmatrix}
+\end{equation*}
+
+\subsection{Modelo omnidireccional}
+
+\begin{equation*}
+    \begin{bmatrix}
+        v_1 \\
+        v_2 \\
+        v_3 \\
+        v_4
+    \end{bmatrix} =
+    \begin{bmatrix}
+        1 & -1 & -(L+l) \\
+        1 & 1 & (L+l) \\
+        1 & 1 & -(L+l) \\
+        1 & -1 & (L+l)
+    \end{bmatrix}
+    \begin{bmatrix}
+        \cos(\theta) & -\sin(\theta) & 0 \\
+        \sin(\theta) & \cos(\theta) & 0 \\
+        0 & 0 & 1
+    \end{bmatrix}^\top
+    \begin{bmatrix}
+        \dot{x}_p \\
+        \dot{y}_p \\
+        \dot{\theta}_p
+    \end{bmatrix}
+\end{equation*}
+
+\begin{equation*}
+    \begin{bmatrix}
+        v_1 \\
+        v_2 \\
+        v_3 \\
+        v_4
+    \end{bmatrix} =
+    \begin{bmatrix}
+        \sqrt{2}\sin(\alpha) & -\sqrt{2}\cos(\alpha) & -(L+l) \\
+        \sqrt{2}\cos(\alpha) & \sqrt{2}\sin(\alpha) & (L+l) \\
+        \sqrt{2}\cos(\alpha) & \sqrt{2}\sin(\alpha) & -(L+l) \\
+        \sqrt{2}\sin(\alpha) & -\sqrt{2}\cos(\alpha) & (L+l)
+    \end{bmatrix}
+    \begin{bmatrix}
+        \dot{x}_p \\
+        \dot{y}_p \\
+        \dot{\theta}_p
+    \end{bmatrix}, \quad
+    \alpha = \theta + \frac{\pi}{4}
+\end{equation*}
+

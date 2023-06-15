@@ -106,8 +106,8 @@ class WaveFront:
 
         return xyPath
 
-    def mainMask(self, minColor, maxColor, n=None):
-        kernel = np.ones((13, 13), dtype=np.uint8)
+    def mainMask(self, minColor, maxColor, k, n=None):
+        kernel = np.ones((k, k), dtype=np.uint8)
 
         hsv = cv.cvtColor(self.__imagen, cv.COLOR_BGR2HSV)
         mask = cv.inRange(hsv, minColor, maxColor)
