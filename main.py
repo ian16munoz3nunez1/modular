@@ -1,113 +1,79 @@
-# Beto <--> Edna <--> Ian
-
-import timeit
 import cv2 as cv
 import numpy as np
-import matplotlib.pyplot as plt
-from time import sleep
-from colorama import init
-from colorama.ansi import Fore
-from kuka import Kuka, link
-from wf import WaveFront
-from dibujarKuka import dibujar_kuka
-pi = np.pi
-sq2 = np.sqrt(2)
 
-init(autoreset=True)
+def arucoDisplay(corners, ids, rejected, image):
+    x = None
+    y = None
+    theta = None
 
-l1 = link(pi/2, 0.0, 0.147, 0.0)
-l2 = link(0.0, 0.155, 0.0, pi/2)
-l3 = link(0.0, 0.135, 0.0, -pi/2)
-l4 = link(0.0, 0.217, 0.0, -pi/2)
+    if len(corners) > 0:
+        ids = ids.flatten()
 
-kuka = Kuka(19999, np.vstack((l1, l2, l3, l4)))
-L = 0.471/2
-l = 0.3/2
-S = 16
+        (topLeft, topRight, bottomRight, bottomLeft) = corners[0][0][:4]
 
-imagen = kuka.getImage()
-imagen = cv.resize(imagen, (30, 30))
-wf = WaveFront(imagen)
+        topLeft = (int(topLeft[0]), int(topLeft[1]))
+        topRight = (int(topRight[0]), int(topRight[1]))
+        bottomRight = (int(bottomRight[0]), int(bottomRight[1]))
+        bottomLeft = (int(bottomLeft[0]), int(bottomLeft[1]))
 
-mask = wf.mainMask((45, 150, 150), (60, 255, 255), 5)[0]
+        cv.line(image, topLeft, topRight, (0, 255, 255), 2)
+        cv.line(image, topRight, bottomRight, (0, 255, 255), 2)
+        cv.line(image, bottomRight, bottomLeft, (0, 255, 255), 2)
+        cv.line(image, bottomLeft, topLeft, (0, 255, 255), 2)
 
-startNorm = wf.appMask((30, 150, 150), (40, 255, 255), 1)[1]
-startY, startX = wf.centroide(startNorm)
-start = np.array([[startY], [startX]])
+        x = int((topLeft[0]+bottomRight[0])/2.0)
+        y = int((topLeft[1]+bottomRight[1])/2.0)
+        try:
+            # theta = -np.arctan( (topRight[1]-topLeft[1])/(topRight[0]-topLeft[0]) ) * (180/np.pi)
+            theta = -np.arctan2( (topRight[1]-topLeft[1]), (topRight[0]-topLeft[0]) ) * (180/np.pi)
+        except:
+            pass
+        cv.circle(image, (x, y), 4, (0, 255, 0), -1)
 
-goalNorm = wf.appMask((125, 150, 150), (160, 255, 255), 1)[1]
-goalY, goalX = wf.centroide(goalNorm)
-goal = np.array([[goalY], [goalX]])
+        cv.putText(image, str(ids[0]), (topLeft[0],topLeft[1]-10), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-path = wf.calcPath(mask, start, goal)
-xyPath = wf.cr2xy(path, 3.7, 2.7)
-wf.plotPath(path, start, goal)
+    return image, x, y, theta
 
-N = xyPath.shape[1]
-k = np.diag([0.8, 0.8, 0.8])
+def cr2xy(imagen, c, r, m_x, m_y):
+    x = None
+    y = None
+    if c is not None and r is not None:
+        R, C = imagen.shape[:2]
 
-start = timeit.default_timer()
-end = start
+        x = -m_x * ((C-2*c)/C)
+        y = m_y * ((R-2*r)/R)
 
-i = 0
-while i < N:
-    p_d = np.array([xyPath[0, i], xyPath[1, i], -pi/2]).reshape(-1, 1)
+    return x, y
 
-    x_i = kuka.getPose().ravel()
-    p_i = x_i[:3]
-    q_i = kuka.fkine(x_i)
+arucoDict = cv.aruco.getPredefinedDictionary(cv.aruco.DICT_4X4_100)
+arucoParams = cv.aruco.DetectorParameters()
+detector = cv.aruco.ArucoDetector(arucoDict, arucoParams)
 
-    alpha = p_i[2] + (pi/4)
-    m = np.array([[sq2*np.sin(alpha), -sq2*np.cos(alpha), -(L+l)],
-                  [sq2*np.cos(alpha), sq2*np.sin(alpha), (L+l)],
-                  [sq2*np.cos(alpha), sq2*np.sin(alpha), -(L+l)],
-                  [sq2*np.sin(alpha), -sq2*np.cos(alpha), (L+l)]])
-    e = p_d - p_i.reshape(-1, 1)
-    if np.mean(abs(e)) <= 0.15:
-        i += 1
-    p_dot = np.matmul(m, np.matmul(k, e))
+# x: 64cm
+# y: 46cm
+m_x = 32
+m_y = 23
 
-    kuka.setJointVelocity(p_dot)
+captura = cv.VideoCapture(0)
 
-    end = timeit.default_timer()
+while True:
+    leido, video = captura.read()
 
-q_d = np.array([[2.75, 3.25],
-                [-1.8, -1.8],
-                [0.29, 0.4]])
+    if not leido:
+        break
 
-i = 0
-while i < 2:
-    x_i = kuka.getPose().ravel()
-    p_i = x_i[:3]
-    q_i = kuka.fkine(x_i)
+    if cv.waitKey(1) == 27:
+        break
 
-    e = q_d[:, i].reshape(-1, 1) - q_i
-    if np.mean(abs(e)) < 0.01:
-        i += 1
-        if i == 1:
-            kuka.closeGrip()
-            sleep(3)
-        if i == 2:
-            kuka.openGrip()
-            sleep(3)
-            break
+    corners, ids, rejected = cv.aruco.detectMarkers(video, arucoDict, parameters=arucoParams)
+    video, c, r, theta = arucoDisplay(corners, ids, rejected, video)
 
-    J = kuka.jacob(x_i)
-    q_dot = np.matmul(np.linalg.pinv(J), np.matmul(k, e))
+    # x, y = cr2xy(video, c, r, m_x, m_y)
+    print(f"x: {c}\ty: {r}\ttheta: {theta}")
 
-    alpha = p_i[2] + (pi/4)
-    m = np.array([[sq2*np.sin(alpha), -sq2*np.cos(alpha), -(L+l)],
-                  [sq2*np.cos(alpha), sq2*np.sin(alpha), (L+l)],
-                  [sq2*np.cos(alpha), sq2*np.sin(alpha), -(L+l)],
-                  [sq2*np.sin(alpha), -sq2*np.cos(alpha), (L+l)]])
+    # video = cv.flip(video, 0)
+    cv.imshow('Video', video)
 
-    v = np.matmul(m, q_dot[:3])
-    q = x_i[3:].reshape(-1, 1) + q_dot[3:]*0.1
-
-    kuka.setJointVelocity(v, q)
-
-    end = timeit.default_timer()
-
-kuka.stopSimulation()
-print(Fore.YELLOW + "[!] Conexion terminada")
+captura.release()
+cv.destroyAllWindows()
 
