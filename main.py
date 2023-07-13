@@ -54,7 +54,7 @@ detector = cv.aruco.ArucoDetector(arucoDict, arucoParams)
 m_x = 32
 m_y = 23
 
-captura = cv.VideoCapture(0)
+captura = cv.VideoCapture(2)
 
 while True:
     leido, video = captura.read()
@@ -68,10 +68,9 @@ while True:
     corners, ids, rejected = cv.aruco.detectMarkers(video, arucoDict, parameters=arucoParams)
     video, c, r, theta = arucoDisplay(corners, ids, rejected, video)
 
-    # x, y = cr2xy(video, c, r, m_x, m_y)
-    print(f"x: {c}\ty: {r}\ttheta: {theta}")
+    x, y = cr2xy(video, c, r, m_x, m_y)
+    print(f"x: {x}\ty: {y}\ttheta: {theta}")
 
-    # video = cv.flip(video, 0)
     cv.imshow('Video', video)
 
 captura.release()

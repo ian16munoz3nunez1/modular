@@ -49,40 +49,59 @@ k = np.diag([0.8, 0.8, 0.8])
 start = timeit.default_timer()
 end = start
 
+pi_plot = np.array([[], [], []])
+pd_plot = np.array([[], [], []])
+ep_plot = np.array([[], [], []])
+
+xi_plot = np.array([[], [], []])
+ex_plot = np.array([[], [], []])
+xd_plot = np.array([[], [], []])
+
+t_plot = np.array([])
+start = timeit.default_timer()
+end = start
+
 i = 0
 while i < N:
     p_d = np.array([xyPath[0, i], xyPath[1, i], -pi/2]).reshape(-1, 1)
 
-    x_i = kuka.getPose().ravel()
-    p_i = x_i[:3]
-    q_i = kuka.fkine(x_i)
+    x = kuka.getPose().ravel()
+    p_i = x[:3]
+    x_i = kuka.fkine(x)
 
     alpha = p_i[2] + (pi/4)
     m = np.array([[sq2*np.sin(alpha), -sq2*np.cos(alpha), -(L+l)],
                   [sq2*np.cos(alpha), sq2*np.sin(alpha), (L+l)],
                   [sq2*np.cos(alpha), sq2*np.sin(alpha), -(L+l)],
                   [sq2*np.sin(alpha), -sq2*np.cos(alpha), (L+l)]])
-    e = p_d - p_i.reshape(-1, 1)
-    if np.mean(abs(e)) <= 0.15:
+    e_p = p_d - p_i.reshape(-1, 1)
+    if np.mean(abs(e_p)) <= 0.15:
         i += 1
-    p_dot = np.matmul(m, np.matmul(k, e))
+    p_dot = np.matmul(m, np.matmul(k, e_p))
 
     kuka.setJointVelocity(p_dot)
 
     end = timeit.default_timer()
+    t_plot = np.hstack((t_plot, end-start))
+    pi_plot = np.hstack((pi_plot, p_i.reshape(-1, 1)))
+    pd_plot = np.hstack((pd_plot, p_d))
+    ep_plot = np.hstack((ep_plot, e_p))
+    xi_plot = np.hstack((xi_plot, x_i))
+    xd_plot = np.hstack((xd_plot, np.array([[0], [0], [0]])))
+    ex_plot = np.hstack((ex_plot, np.array([[0], [0], [0]])))
 
-q_d = np.array([[2.75, 3.25],
+x_d = np.array([[2.75, 3.25],
                 [-1.8, -1.8],
                 [0.29, 0.4]])
 
 i = 0
 while i < 2:
-    x_i = kuka.getPose().ravel()
-    p_i = x_i[:3]
-    q_i = kuka.fkine(x_i)
+    x = kuka.getPose().ravel()
+    p_i = x[:3]
+    x_i = kuka.fkine(x)
 
-    e = q_d[:, i].reshape(-1, 1) - q_i
-    if np.mean(abs(e)) < 0.01:
+    e_x = x_d[:, i].reshape(-1, 1) - x_i
+    if np.mean(abs(e_x)) < 0.01:
         i += 1
         if i == 1:
             kuka.closeGrip()
@@ -92,8 +111,8 @@ while i < 2:
             sleep(3)
             break
 
-    J = kuka.jacob(x_i)
-    q_dot = np.matmul(np.linalg.pinv(J), np.matmul(k, e))
+    J = kuka.jacob(x)
+    q_dot = np.matmul(np.linalg.pinv(J), np.matmul(k, e_x))
 
     alpha = p_i[2] + (pi/4)
     m = np.array([[sq2*np.sin(alpha), -sq2*np.cos(alpha), -(L+l)],
@@ -102,12 +121,75 @@ while i < 2:
                   [sq2*np.sin(alpha), -sq2*np.cos(alpha), (L+l)]])
 
     v = np.matmul(m, q_dot[:3])
-    q = x_i[3:].reshape(-1, 1) + q_dot[3:]*0.1
+    q = x[3:].reshape(-1, 1) + q_dot[3:]*0.1
 
     kuka.setJointVelocity(v, q)
 
     end = timeit.default_timer()
+    t_plot = np.hstack((t_plot, end-start))
+    pi_plot = np.hstack((pi_plot, p_i.reshape(-1, 1)))
+    pd_plot = np.hstack((pd_plot, np.array([[0], [0], [0]])))
+    ep_plot = np.hstack((ep_plot, np.array([[0], [0], [0]])))
+    xi_plot = np.hstack((xi_plot, x_i))
+    xd_plot = np.hstack((xd_plot, x_d[:, i].reshape(-1, 1)))
+    ex_plot = np.hstack((ex_plot, e_x))
 
 kuka.stopSimulation()
 print(Fore.YELLOW + "[!] Conexion terminada")
+
+plt.figure(1)
+plt.grid()
+
+plt.plot(t_plot, pi_plot[0, :], linewidth=2)
+plt.plot(t_plot, pi_plot[1, :], linewidth=2)
+plt.plot(t_plot, pi_plot[2, :], linewidth=2)
+plt.plot(t_plot, pd_plot[0, :], linewidth=2)
+plt.plot(t_plot, pd_plot[1, :], linewidth=2)
+plt.plot(t_plot, pd_plot[2, :], linewidth=2)
+
+plt.title("Posicion actual y deseada de la plataforma", fontsize=20)
+plt.xlabel('Tiempo (s)', fontsize=15)
+plt.ylabel('Posiciones', fontsize=15)
+plt.legend(['$x_i$', '$y_i$', '$\\theta_i$', '$x_d$', '$y_d$', '$\\theta_d$'])
+
+plt.figure(2)
+plt.grid()
+
+plt.plot(t_plot, ep_plot[0, :], linewidth=2)
+plt.plot(t_plot, ep_plot[1, :], linewidth=2)
+plt.plot(t_plot, ep_plot[2, :], linewidth=2)
+
+plt.title("Error de posicion de la plataforma", fontsize=20)
+plt.xlabel('Tiempo (s)', fontsize=15)
+plt.ylabel('Error', fontsize=15)
+plt.legend(['$e_x$', '$e_y$', '$e_\\theta$'])
+
+plt.figure(3)
+plt.grid()
+
+plt.plot(t_plot, xi_plot[0, :], linewidth=2)
+plt.plot(t_plot, xi_plot[1, :], linewidth=2)
+plt.plot(t_plot, xi_plot[2, :], linewidth=2)
+plt.plot(t_plot, xd_plot[0, :], linewidth=2)
+plt.plot(t_plot, xd_plot[1, :], linewidth=2)
+plt.plot(t_plot, xd_plot[2, :], linewidth=2)
+
+plt.title("Posicion actual y deseada del efector final", fontsize=20)
+plt.xlabel('Tiempo (s)', fontsize=15)
+plt.ylabel('Posiciones', fontsize=15)
+plt.legend(['$x_i$', '$y_i$', '$z_i$', '$x_d$', '$y_d$', '$\\theta_d$'])
+
+plt.figure(4)
+plt.grid()
+
+plt.plot(t_plot, ex_plot[0, :], linewidth=2)
+plt.plot(t_plot, ex_plot[1, :], linewidth=2)
+plt.plot(t_plot, ex_plot[2, :], linewidth=2)
+
+plt.title("Error de posicion del efector final", fontsize=20)
+plt.xlabel('Tiempo (s)', fontsize=15)
+plt.ylabel('Error', fontsize=15)
+plt.legend(['$e_x$', '$e_y$', '$e_\\theta$'])
+
+plt.show()
 
