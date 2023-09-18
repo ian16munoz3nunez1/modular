@@ -1,3 +1,6 @@
+# 215503408: Briseño García Edna Elizabeth
+# 216464457: Muñoz Nuñez Ian Emmanuel
+
 import numpy as np
 import matplotlib.pyplot as plt
 pi = np.pi

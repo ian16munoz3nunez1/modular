@@ -1,44 +1,13 @@
-# Beto <--> Edna <--> Ian
+# 215503408: Briseño García Edna Elizabeth
+# 216464457: Muñoz Nuñez Ian Emmanuel
 
 import network
 import socket
-from machine import Pin, PWM
 from time import sleep
+from func import forward, backward, blink, led
 
-led = Pin(2, Pin.OUT)
-rf = PWM(Pin(4, Pin.OUT), freq=60)
-rb = PWM(Pin(5, Pin.OUT), freq=60)
-lf = PWM(Pin(18, Pin.OUT), freq=60)
-lb = PWM(Pin(19, Pin.OUT), freq=60)
+ip, port = '192.168.1.28', 9999
 chunk = 1024
-
-rf.duty(0)
-rb.duty(0)
-lf.duty(0)
-lb.duty(0)
-
-def rightForward(v):
-    rb.duty(0)
-    rf.duty(v)
-
-def rightBackward(v):
-    rf.duty(0)
-    rb.duty(v)
-
-def leftForward(v):
-    lb.duty(0)
-    lf.duty(v)
-
-def leftBackward(v):
-    lf.duty(0)
-    lb.duty(v)
-
-def blink(v, t):
-    for i in range(v):
-        led.on()
-        sleep(t)
-        led.off()
-        sleep(t)
 
 def conectar(ssid, password):
     blink(2, 0.5)
@@ -59,7 +28,7 @@ while True:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-        sock.connect(('192.168.1.28', 9999))
+        sock.connect((ip, port))
         break
     except:
         led.off()
@@ -68,25 +37,28 @@ while True:
 blink(5, 0.2)
 while True:
     try:
-        v = sock.recv(chunk).decode()
-        print(v)
+        msg = sock.recv(chunk).decode()
+        print(msg)
 
-        if v[0].lower() == 'q':
+        if msg[0].lower() == 'q':
+            sock.send(b"Fin de la conexion")
             break
 
-        w = [int(i) for i in v.split(',')]
-        wl = int(abs(w[0])*1023/100)
-        wr = int(abs(w[1])*1023/100)
+        v = [int(i) for i in msg.split(',')]
 
         sock.send(b'ok')
-        if w[0] >= 0:
-            leftForward(wl)
+        if v[0] >= 0:
+            forward('1', v[0])
         else:
-            leftBackward(wl)
-        if w[1] >= 0:
-            rightForward(wr)
+            backward('1', abs(v[0]))
+        if v[1] >= 0:
+            forward('2', v[1])
         else:
-            rightBackward(wr)
+            backward('2', abs(v[1]))
+        if v[2] >= 0:
+            forward('3', v[2])
+        else:
+            backward('3', abs(v[2]))
 
     except Exception as e:
         print(e)

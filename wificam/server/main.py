@@ -1,4 +1,5 @@
-# Beto <--> Edna <--> Ian
+# 215503408: Briseño García Edna Elizabeth
+# 216464457: Muñoz Nuñez Ian Emmanuel
 
 import camera as cv
 import socket

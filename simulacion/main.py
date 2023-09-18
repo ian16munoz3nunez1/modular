@@ -1,4 +1,7 @@
-# Beto <--> Edna <--> Ian
+#!/bin/python3
+
+# 215503408: Briseño García Edna Elizabeth
+# 216464457: Muñoz Nuñez Ian Emmanuel
 
 import timeit
 import cv2 as cv
