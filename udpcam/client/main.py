@@ -28,7 +28,7 @@ def conectar(ssid, password):
             pass
     blink(2, 0.2)
 
-conectar('IZZI-BC36', 'vm5sstg3')
+conectar(,)
 cv.init(0, format=cv.JPEG)
 
 addr = ('192.168.1.28', 9000)

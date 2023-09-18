@@ -20,7 +20,7 @@ def conectar(ssid, password):
             pass
     blink(2, 0.5)
 
-conectar('IZZI-BC36', 'vm5sstg3')
+conectar(,)
 
 while True:
     try:

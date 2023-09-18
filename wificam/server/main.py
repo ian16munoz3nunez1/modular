@@ -27,7 +27,7 @@ def conectar(ssid, password):
             pass
     blink(2, 0.2)
 
-conectar('IZZI-BC36', 'vm5sstg3')
+conectar(,)
 cv.init(0, format=cv.JPEG)
 
 host, port = '0.0.0.0', 8080
