@@ -6,7 +6,7 @@ import socket
 from time import sleep
 from func import forward, backward, blink, led
 
-ip, port = '192.168.1.28', 9999
+ip, port = '', 9999
 chunk = 1024
 
 def conectar(ssid, password):

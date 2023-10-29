@@ -9,7 +9,7 @@ arucoDict = cv.aruco.getPredefinedDictionary(cv.aruco.DICT_4X4_100)
 arucoParams = cv.aruco.DetectorParameters()
 detector = cv.aruco.ArucoDetector(arucoDict, arucoParams)
 
-url = "http://192.168.1.21:8080"
+url = "http://192.168.1.0:8080"
 captura = cv.VideoCapture(url)
 
 winName = 'esp32cam'

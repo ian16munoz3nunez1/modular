@@ -24,10 +24,10 @@ Listar los dispositivos conectados a los puertos:
 `py -m serial.tools.list_ports`
 
 Borrar la memoria del esp32:
-`esptool.py --chip esp32 --port COM* erase_flash`
+`esptool --chip esp32 --port COM* erase_flash`
 
 Cargar el archivo binario a la placa esp32:
-`esptool.py --chip esp32 --port COM* --baud 460800 write_flash -z 0x1000 <esp32version>.bin`
+`esptool --chip esp32 --port COM* --baud 460800 write_flash -z 0x1000 <esp32version>.bin`
 
 Cargar un archivo *Python* a la esp32:
 `ampy --port COM* put main.py`
@@ -42,6 +42,20 @@ Crear conexión serial con la esp32 en PuTTY:
 
 - Puerto: ***COM\****
 - Velocidad: ***115200 bauds***
+
+#### Configurar Thonny para esp32cam
+
+Ir a ***Thonny***:
+
+`Tools > Open Thonny data folder...`
+
+Agregar al archivo ***configuration.ini*** en la sección ***ESP32***
+
+```
+[ESP32]
+rts = False
+dtr = False
+```
 
 ### Linux
 
@@ -65,4 +79,7 @@ Listar los archivos dentro de la placa:
 
 Crear conexión serial con la esp32:
 `picocom /dev/ttyUSB* -b 115200`
+
+Crear conexión serial con la esp32cam:
+`picocom /dev/ttyUSB* -b 115200 --lower-dtr --lower-rts`
 
